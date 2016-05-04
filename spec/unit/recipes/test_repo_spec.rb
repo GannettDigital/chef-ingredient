@@ -16,10 +16,6 @@ describe 'test::repo' do
         expect(chef_run).to install_chef_ingredient('chef-server')
       end
 
-      it 'installs the mixlib-versioning gem' do
-        expect(chef_run).to install_chef_gem('mixlib-versioning')
-      end
-
       it 'creates file[/tmp/chef-server-core.firstrun]' do
         expect(chef_run).to create_file('/tmp/chef-server-core.firstrun')
       end
@@ -51,11 +47,11 @@ EOS
       end
 
       it 'creates config directory for manage' do
-        expect(chef_run).to create_directory('/etc/opscode-manage')
+        expect(chef_run).to create_directory('/etc/chef-manage')
       end
 
       it 'creates config file for manage with sensitive set' do
-        expect(chef_run).to create_file('/etc/opscode-manage/manage.rb').with sensitive: true, content: <<-EOS
+        expect(chef_run).to create_file('/etc/chef-manage/manage.rb').with sensitive: true, content: <<-EOS
 disable_sign_up true
 support_email_address "admin@chef.io"
 EOS
@@ -79,66 +75,18 @@ EOS
       end.converge(described_recipe)
     end
 
-    it 'installs yum_package[chef-server]' do
-      expect(centos_65).to install_yum_package('chef-server-core')
+    it 'installs package[chef-server]' do
+      pkgres = centos_65.find_resource('package', 'chef-server')
+      expect(pkgres).to_not be_nil
+      expect(pkgres).to be_a(Chef::Resource::Package)
+      expect(centos_65).to install_package('chef-server')
     end
 
-    it 'installs yum_package[opscode-manage]' do
-      expect(centos_65).to install_yum_package('opscode-manage')
-    end
-  end
-
-  context 'release version specified as 12.0.4' do
-    cached(:centos_65) do
-      ChefSpec::SoloRunner.new(
-        platform: 'centos',
-        version: '6.5',
-        step_into: ['chef_ingredient']
-      ) do |node|
-        node.set['test']['chef-server-core']['version'] = '12.0.4'
-      end.converge(described_recipe)
-    end
-
-    it 'installs the package with the release version string and el6' do
-      expect(centos_65).to install_yum_package('chef-server-core').with(
-        version: '12.0.4-1.el6'
-      )
-    end
-  end
-
-  context 'package iteration version specified as 12.0.4-1' do
-    cached(:centos_65) do
-      ChefSpec::SoloRunner.new(
-        platform: 'centos',
-        version: '6.5',
-        step_into: ['chef_ingredient']
-      ) do |node|
-        node.set['test']['chef-server-core']['version'] = '12.0.4-1'
-      end.converge(described_recipe)
-    end
-
-    it 'installs the package with the release version string and el6' do
-      expect(centos_65).to install_yum_package('chef-server-core').with(
-        version: '12.0.4-1.el6'
-      )
-    end
-  end
-
-  context 'release candidate version specified as 12.1.0-rc.3' do
-    cached(:centos_65) do
-      ChefSpec::SoloRunner.new(
-        platform: 'centos',
-        version: '6.5',
-        step_into: ['chef_ingredient']
-      ) do |node|
-        node.set['test']['chef-server-core']['version'] = '12.1.0-rc.3'
-      end.converge(described_recipe)
-    end
-
-    it 'installs the package with the tilde version separator and release identifier and el6' do
-      expect(centos_65).to install_yum_package('chef-server-core').with(
-        version: '12.1.0~rc.3-1.el6'
-      )
+    it 'installs package[opscode-manage]' do
+      pkgres = centos_65.find_resource('package', 'manage')
+      expect(pkgres).to_not be_nil
+      expect(pkgres).to be_a(Chef::Resource::Package)
+      expect(centos_65).to install_package('manage')
     end
   end
 
@@ -154,7 +102,7 @@ EOS
     end
 
     it 'installs yum_package[chef-server]' do
-      expect(centos_65).to install_yum_package('chef-server-core')
+      expect(centos_65).to install_package('chef-server-core')
     end
   end
 
@@ -170,7 +118,7 @@ EOS
     end
 
     it 'installs yum_package[chef-server]' do
-      expect(centos_65).to install_yum_package('chef-server-core')
+      expect(centos_65).to install_package('chef-server-core')
     end
   end
 
@@ -186,65 +134,17 @@ EOS
     end
 
     it 'installs apt_package[chef-server-core]' do
-      expect(ubuntu_1404).to install_apt_package('chef-server-core')
+      pkgres = ubuntu_1404.find_resource('package', 'chef-server')
+      expect(pkgres).to_not be_nil
+      expect(pkgres).to be_a(Chef::Resource::AptPackage)
+      expect(ubuntu_1404).to install_package('chef-server')
     end
 
     it 'installs apt_package[opscode-manage]' do
-      expect(ubuntu_1404).to install_apt_package('opscode-manage')
-    end
-  end
-
-  context 'release version specified 12.0.4' do
-    cached(:ubuntu_1404) do
-      ChefSpec::SoloRunner.new(
-        platform: 'ubuntu',
-        version: '14.04',
-        step_into: ['chef_ingredient']
-      ) do |node|
-        node.set['test']['chef-server-core']['version'] = '12.0.4'
-      end.converge(described_recipe)
-    end
-
-    it 'installs the package with the release version string' do
-      expect(ubuntu_1404).to install_apt_package('chef-server-core').with(
-        version: '12.0.4-1'
-      )
-    end
-  end
-
-  context 'package iteration version specified 12.0.4-1' do
-    cached(:ubuntu_1404) do
-      ChefSpec::SoloRunner.new(
-        platform: 'ubuntu',
-        version: '14.04',
-        step_into: ['chef_ingredient']
-      ) do |node|
-        node.set['test']['chef-server-core']['version'] = '12.0.4-1'
-      end.converge(described_recipe)
-    end
-
-    it 'installs the package with the release version string' do
-      expect(ubuntu_1404).to install_apt_package('chef-server-core').with(
-        version: '12.0.4-1'
-      )
-    end
-  end
-
-  context 'release candidate version specified, 12.1.0-rc.3' do
-    cached(:ubuntu_1404) do
-      ChefSpec::SoloRunner.new(
-        platform: 'ubuntu',
-        version: '14.04',
-        step_into: ['chef_ingredient']
-      ) do |node|
-        node.set['test']['chef-server-core']['version'] = '12.1.0-rc.3'
-      end.converge(described_recipe)
-    end
-
-    it 'installs the package with the tilde version separator' do
-      expect(ubuntu_1404).to install_apt_package('chef-server-core').with(
-        version: '12.1.0~rc.3-1'
-      )
+      pkgres = ubuntu_1404.find_resource('package', 'manage')
+      expect(pkgres).to_not be_nil
+      expect(pkgres).to be_a(Chef::Resource::AptPackage)
+      expect(ubuntu_1404).to install_package('manage')
     end
   end
 
@@ -260,7 +160,7 @@ EOS
     end
 
     it 'installs yum_package[chef-server]' do
-      expect(ubuntu_1404).to install_apt_package('chef-server-core')
+      expect(ubuntu_1404).to install_package('chef-server-core')
     end
   end
 
@@ -276,7 +176,27 @@ EOS
     end
 
     it 'installs apt_package[chef-server]' do
-      expect(ubuntu_1404).to install_apt_package('chef-server-core')
+      expect(ubuntu_1404).to install_package('chef-server-core')
+    end
+  end
+
+  context 'non-existing package specified' do
+    cached(:ubuntu_1404) do
+      ChefSpec::SoloRunner.new(
+        platform: 'ubuntu',
+        version: '14.04',
+        step_into: ['chef_ingredient']
+      ) do |node|
+        node.set['test']['chef-server-core']['version'] = 'latest'
+      end.converge(described_recipe)
+    end
+
+    it 'raises an error' do
+      # override before in spec_helper
+      installer = instance_double('installer', artifact_info: [])
+      allow_any_instance_of(Chef::Provider::ChefIngredient).to receive(:installer).and_return(installer)
+
+      expect { ubuntu_1404 }.to raise_error
     end
   end
 end

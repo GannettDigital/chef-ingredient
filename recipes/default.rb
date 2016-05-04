@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, Chef Software, Inc. <legal@getchef.com>
+# Copyright (c) 2015, Chef Software, Inc. <legal@chef.io>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,16 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-class Chef
-  class Resource
-    class IngredientConfig < Chef::Resource::LWRPBase
-      resource_name :ingredient_config
 
-      actions :render
-      default_action :render
-
-      attribute :product_name, kind_of: String, name_attribute: true
-      attribute :sensitive, kind_of: [TrueClass, FalseClass], default: false
-    end
-  end
-end
+# This recipe is included to make our tests happy.
+# By intention, it does not contain anything.

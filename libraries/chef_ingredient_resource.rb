@@ -1,6 +1,6 @@
 #
-# Author:: Joshua Timberman <joshua@getchef.com
-# Copyright (c) 2015, Chef Software, Inc. <legal@getchef.com>
+# Author:: Joshua Timberman <joshua@chef.io
+# Copyright (c) 2015, Chef Software, Inc. <legal@chef.io>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,23 +21,30 @@ class Chef
 
       actions :install, :uninstall, :remove, :reconfigure, :upgrade
       default_action :install
-      state_attrs :installed
 
       attribute :product_name, kind_of: String, name_attribute: true
-      attribute :installed, kind_of: [TrueClass, FalseClass, NilClass], default: false
-      attribute :reconfigure, kind_of: [TrueClass, FalseClass], default: false
       attribute :config, kind_of: String, default: nil
+
+      # Attributes for determining what version to install from which channel
+      attribute :version, kind_of: [String, Symbol], default: :latest
+      attribute :channel, kind_of: Symbol, default: :stable, equal_to: [:current, :stable, :unstable]
 
       # Attribute to install package from local file
       attribute :package_source, kind_of: String, default: nil
 
-      # Attributes for reconfigure step
+      # Sets the *-ctl command to use when doing reconfigure
       attribute :ctl_command, kind_of: String
 
-      # Attributes for package
+      # Attributes for package resources used on rhel and debian platforms
       attribute :options, kind_of: String
-      attribute :version, kind_of: [String, Symbol], default: :latest
       attribute :timeout, kind_of: [Integer, String, NilClass], default: nil
+
+      # Attribute to accept the license when applicable
+      attribute :accept_license, kind_of: [TrueClass, FalseClass], default: false
+
+      # Attribute to enable selecting packages built for earlier versions in
+      # platforms that are not yet officially added to Chef support matrix
+      attribute :platform_version_compatibility_mode, kind_of: [TrueClass, FalseClass], default: false
     end
   end
 end

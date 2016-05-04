@@ -1,4 +1,8 @@
 if defined?(ChefSpec)
+  %i(chef_ingredient chef_server_ingredient omnibus_service ingredient_config).each do |resource|
+    ChefSpec.define_matcher resource
+  end
+
   def install_chef_ingredient(pkg)
     ChefSpec::Matchers::ResourceMatcher.new(:chef_ingredient, :install, pkg)
   end
@@ -65,5 +69,13 @@ if defined?(ChefSpec)
 
   def once_kill_omnibus_service(pkg)
     ChefSpec::Matchers::ResourceMatcher.new(:omnibus_service, :once, pkg)
+  end
+
+  def render_ingredient_config(pkg)
+    ChefSpec::Matchers::ResourceMatcher.new(:ingredient_config, :render, pkg)
+  end
+
+  def add_ingredient_config(pkg)
+    ChefSpec::Matchers::ResourceMatcher.new(:ingredient_config, :add, pkg)
   end
 end

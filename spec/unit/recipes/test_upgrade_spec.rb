@@ -28,23 +28,36 @@ describe 'test::upgrade' do
     end
 
     it 'upgrades yum_package[chef-server]' do
-      expect(centos_65).to upgrade_yum_package('chef-server-core')
+      # Since we have two resources with same name and identity we can't use
+      # the upgrade_package & install_package matchers directly.
+      chef_server_resources = centos_65.find_resources(:package)
+      expect(chef_server_resources.length).to eq(2)
+      expect(chef_server_resources[0].action.first).to eq(:install)
+      expect(chef_server_resources[0].package_name).to eq('chef-server-core')
+      expect(chef_server_resources[1].action.first).to eq(:upgrade)
+      expect(chef_server_resources[1].package_name).to eq('chef-server-core')
     end
   end
 
-  context 'upgrade packages with apt on ubuntu' do
+  context 'upgrade packages on ubuntu' do
     cached(:ubuntu_1404) do
       ChefSpec::SoloRunner.new(
         platform: 'ubuntu',
         version: '14.04',
+        architecture: 'x86_64',
         step_into: %w(chef_ingredient)
       ) do |node|
         node.set['chef-server-core']['version'] = :latest
       end.converge(described_recipe)
     end
 
-    it 'upgrades apt_package[chef-server]' do
-      expect(ubuntu_1404).to upgrade_apt_package('chef-server-core')
+    it 'upgrades package[chef-server]' do
+      chef_server_resources = ubuntu_1404.find_resources(:package)
+      expect(chef_server_resources.length).to eq(2)
+      expect(chef_server_resources[0].action.first).to eq(:install)
+      expect(chef_server_resources[0].package_name).to eq('chef-server-core')
+      expect(chef_server_resources[1].action.first).to eq(:upgrade)
+      expect(chef_server_resources[1].package_name).to eq('chef-server-core')
     end
   end
 end

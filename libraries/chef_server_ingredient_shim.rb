@@ -1,6 +1,6 @@
 #
-# Author:: Joshua Timberman <joshua@getchef.com
-# Copyright (c) 2014, Chef Software, Inc. <legal@getchef.com>
+# Author:: Joshua Timberman <joshua@chef.io
+# Copyright (c) 2014, Chef Software, Inc. <legal@chef.io>
 #
 # Portions from https://github.com/computology/packagecloud-cookbook:
 # Copyright (c) 2014, Computology, LLC.
@@ -18,9 +18,13 @@
 # limitations under the License.
 #
 
+require_relative './chef_ingredient_resource'
+require_relative './chef_ingredient_provider'
+
 class Chef
   class Provider
     class ChefServerIngredient < Chef::Provider::ChefIngredient
+      provides :chef_server_ingredient
     end
   end
 end
@@ -29,6 +33,12 @@ class Chef
   class Resource
     class ChefServerIngredient < Chef::Resource::ChefIngredient
       resource_name :chef_server_ingredient
+
+      # Adding this for compatibility, it won't do anything since the
+      # provider doesn't implement it
+      attribute :repository, kind_of: String, default: ''
+      # More compatibility for older versions of chef-server-ingredient
+      attribute :master_token, kind_of: String
     end
   end
 end
