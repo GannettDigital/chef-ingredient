@@ -2,11 +2,11 @@ require 'spec_helper'
 
 describe 'test::repo' do
   [{ platform: 'ubuntu', version: '14.04' },
-   { platform: 'centos', version: '6.7' }].each do |platform|
+   { platform: 'centos', version: '6.9' }].each do |platform|
     context "non-platform specific resources on #{platform[:platform]}" do
       cached(:chef_run) do
         ChefSpec::SoloRunner.new(
-          platform.merge(step_into: %w(chef_ingredient chef_server_ingredient ingredient_config))
+          platform.merge(step_into: %w(chef_ingredient ingredient_config))
         ) do |node|
           node.normal['chef_admin'] = 'admin@chef.io'
         end.converge(described_recipe)
@@ -38,8 +38,8 @@ EOS
         expect(resource).to notify('chef_ingredient[chef-server]')
       end
 
-      it 'installs chef_server_ingredient[manage]' do
-        expect(chef_run).to install_chef_server_ingredient('manage')
+      it 'installs chef_ingredient[manage]' do
+        expect(chef_run).to install_chef_ingredient('manage')
       end
 
       it 'creates file[/tmp/opscode-manage.firstrun]' do
@@ -59,42 +59,42 @@ EOS
 
       it 'uses ingredient_config to notify a reconfigure for manage' do
         resource = chef_run.find_resource('ingredient_config', 'manage')
-        expect(resource).to notify('chef_server_ingredient[manage]')
+        expect(resource).to notify('chef_ingredient[manage]')
       end
     end
   end
 
   context 'install packages with yum on centos' do
-    cached(:centos_67) do
+    cached(:centos_6) do
       ChefSpec::SoloRunner.new(
         platform: 'centos',
-        version: '6.7',
-        step_into: %w(chef_ingredient chef_server_ingredient)
+        version: '6.9',
+        step_into: %w(chef_ingredient chef_ingredient)
       ) do |node|
         node.normal['chef-server-core']['version'] = nil
       end.converge(described_recipe)
     end
 
     it 'installs package[chef-server]' do
-      pkgres = centos_67.find_resource('package', 'chef-server')
+      pkgres = centos_6.find_resource('package', 'chef-server')
       expect(pkgres).to_not be_nil
       expect(pkgres).to be_a(Chef::Resource::Package)
-      expect(centos_67).to install_package('chef-server')
+      expect(centos_6).to install_package('chef-server')
     end
 
     it 'installs package[opscode-manage]' do
-      pkgres = centos_67.find_resource('package', 'manage')
+      pkgres = centos_6.find_resource('package', 'manage')
       expect(pkgres).to_not be_nil
       expect(pkgres).to be_a(Chef::Resource::Package)
-      expect(centos_67).to install_package('manage')
+      expect(centos_6).to install_package('manage')
     end
   end
 
   context ':latest is specified for the version as a symbol' do
-    cached(:centos_67) do
+    cached(:centos_6) do
       ChefSpec::SoloRunner.new(
         platform: 'centos',
-        version: '6.7',
+        version: '6.9',
         step_into: ['chef_ingredient']
       ) do |node|
         node.normal['test']['chef-server-core']['version'] = :latest
@@ -102,15 +102,15 @@ EOS
     end
 
     it 'installs yum_package[chef-server]' do
-      expect(centos_67).to install_package('chef-server-core')
+      expect(centos_6).to install_package('chef-server-core')
     end
   end
 
   context 'latest is specified for the version as a string' do
-    cached(:centos_67) do
+    cached(:centos_6) do
       ChefSpec::SoloRunner.new(
         platform: 'centos',
-        version: '6.7',
+        version: '6.9',
         step_into: ['chef_ingredient']
       ) do |node|
         node.normal['test']['chef-server-core']['version'] = 'latest'
@@ -118,7 +118,7 @@ EOS
     end
 
     it 'installs yum_package[chef-server]' do
-      expect(centos_67).to install_package('chef-server-core')
+      expect(centos_6).to install_package('chef-server-core')
     end
   end
 
@@ -127,7 +127,7 @@ EOS
       ChefSpec::SoloRunner.new(
         platform: 'ubuntu',
         version: '14.04',
-        step_into: %w(chef_ingredient chef_server_ingredient)
+        step_into: %w(chef_ingredient chef_ingredient)
       ) do |node|
         node.normal['chef-server-core']['version'] = nil
       end.converge(described_recipe)
@@ -177,27 +177,6 @@ EOS
 
     it 'installs apt_package[chef-server]' do
       expect(ubuntu_1404).to install_package('chef-server-core')
-    end
-  end
-
-  context 'non-existing package specified' do
-    cached(:ubuntu_1404) do
-      ChefSpec::SoloRunner.new(
-        platform: 'ubuntu',
-        version: '14.04',
-        step_into: ['chef_ingredient']
-      ) do |node|
-        node.normal['test']['chef-server-core']['version'] = 'latest'
-      end.converge(described_recipe)
-    end
-
-    it 'raises an error' do
-      # override before in spec_helper
-      options = instance_double('options', platform: 'ubuntu', platform_version: '14.04', architecture: 'x86_64')
-      installer = instance_double('installer', artifact_info: [], options: options)
-      allow_any_instance_of(Chef::Provider::ChefIngredient).to receive(:installer).and_return(installer)
-
-      expect { ubuntu_1404 }.to raise_error RuntimeError, /No package found for 'chef-server' with version 'latest' for platform 'ubuntu-14.04-x86_64' in 'stable' channel/
     end
   end
 end

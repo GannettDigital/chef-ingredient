@@ -7,9 +7,15 @@ This file lists how this cookbook project is maintained. When making changes to 
 Check out [How Cookbooks are Maintained](https://github.com/chef-cookbooks/community_cookbook_documentation/blob/master/CONTRIBUTING.MD) for details on the process and how to become a maintainer or the project lead.
 
 # Project Maintainer
-* [Joshua Timberman](https://github.com/jtimberman)
+* [Patrick Wright](https://github.com/wrightp)
 
 # Maintainers
 * [Joshua Timberman](https://github.com/jtimberman)
-* [Serdar Sutay](https://github.com/sersut)
-* [Patrick Wright](https://github.com/patrick-wright)
+* [Patrick Wright](https://github.com/wrightp)
+* [Seth Chisamore](https://github.com/schisamo)
+* [Nathan Cerny](https://github.com/ncerny)
+* [Tom Duffield](https://github.com/tduffield)
+* [Andrew DuFour](https://github.com/andrew-dufour)
+* [Mark Harrison](https://github.com/mivok)
+* [Stephen Lauck](https://github.com/stephenlauck)
+* [Tim Smith](https://github.com/tas50)

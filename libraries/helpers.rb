@@ -1,6 +1,6 @@
 #
 # Author:: Joshua Timberman <joshua@chef.io>
-# Copyright (c) 2014-2016, Chef Software, Inc. <legal@chef.io>
+# Copyright:: 2014-2017, Chef Software, Inc. <legal@chef.io>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -87,7 +87,7 @@ module ChefIngredientCookbook
             'mixlib-install'
           )
         else
-          install_gem_from_rubygems('mixlib-install', ['~> 2.1', '>= 2.1.12'])
+          install_gem_from_rubygems('mixlib-install', '~> 3.3')
         end
 
         require 'mixlib/install'
@@ -239,18 +239,6 @@ module ChefIngredientCookbook
     ########################################################################
 
     #
-    # Returns true if a given fqdn resolves, false otherwise.
-    #
-    def fqdn_resolves?(fqdn)
-      require 'resolv'
-      Resolv.getaddress(fqdn)
-      return true
-    rescue Resolv::ResolvError, Resolv::ResolvTimeout
-      false
-    end
-    module_function :fqdn_resolves?
-
-    #
     # Declares a resource that will fail the chef run when signalled.
     #
     def declare_chef_run_stop_resource
@@ -268,6 +256,16 @@ module ChefIngredientCookbook
       end
     end
 
+    def fqdn_resolves?(fqdn)
+      require 'resolv'
+      Resolv.getaddress(fqdn)
+      return true
+    rescue Resolv::ResolvError, Resolv::ResolvTimeout
+      false
+    end
+
+    module_function :fqdn_resolves?
+
     def windows?
       node['platform_family'] == 'windows'
     end
@@ -277,81 +275,73 @@ module ChefIngredientCookbook
     # chef_ingredient resource that can be used for querying builds or
     # generating install scripts.
     #
+    #
     def installer
       @installer ||= begin
         ensure_mixlib_install_gem_installed!
+
+        resolve_platform_properties!
 
         options = {
           product_name: new_resource.product_name,
           channel: new_resource.channel,
           product_version: new_resource.version,
-          platform_version_compatibility_mode: new_resource.platform_version_compatibility_mode,
+          platform: new_resource.platform,
+          platform_version: new_resource.platform_version,
+          architecture: Mixlib::Install::Util.normalize_architecture(new_resource.architecture),
         }.tap do |opt|
+          if new_resource.platform_version_compatibility_mode
+            opt[:platform_version_compatibility_mode] = new_resource.platform_version_compatibility_mode
+          end
           opt[:shell_type] = :ps1 if windows?
         end
-
-        platform_details = Mixlib::Install.detect_platform
-
-        platform_details.tap do |opt|
-          opt[:platform] = new_resource.platform if new_resource.platform
-          opt[:platform_version] = new_resource.platform_version if new_resource.platform_version
-          opt[:architecture] = new_resource.architecture if new_resource.architecture
-        end
-
-        options.merge!(platform_details)
 
         Mixlib::Install.new(options)
       end
     end
 
     #
-    # Returns package installer options with any required
-    # options based on platform
+    # Defaults platform, platform_version, and architecture
+    # properties when not set by recipe
     #
-    def package_options_with_force
-      options = new_resource.options
+    def resolve_platform_properties!
+      # Auto detect platform
+      detected_platform = Mixlib::Install.detect_platform
 
-      # Ubuntu 10.10 and Debian 6 require the `--force-yes` option
-      # for package installs
-      if (platform?('ubuntu') && node['platform_version'] == '10.04') ||
-         (platform?('debian') && node['platform_version'].start_with?('6'))
-        if options.nil?
-          options = '--force-yes'
-        else
-          options << ' --force-yes'
-        end
+      if new_resource.platform.nil?
+        new_resource.platform(detected_platform[:platform])
       end
 
-      options
+      if new_resource.platform_version.nil?
+        new_resource.platform_version(detected_platform[:platform_version])
+      end
+
+      if new_resource.architecture.nil?
+        new_resource.architecture(detected_platform[:architecture])
+      end
+
+      true
     end
 
-    #
-    # Checks the deprecated properties of chef-ingredient and prints warning
-    # messages if any of them are being used.
-    #
-    def check_deprecated_properties
-      # Historically we have had chef- and opscode- in front of most of our
-      # packages. But with our move to bintray we have standardized on names
-      # without any prefixes except some products.
-      if !%w(chef-backend chef-server chef-server-ha-provisioning).include?(new_resource.product_name) &&
-         (match = new_resource.product_name.match(/(chef-|opscode-)(?<product_key>.*)/))
+    def prefix
+      (platform_family?('windows') ? 'C:/Chef/' : '/etc/chef/')
+    end
 
-        new_product_key = match[:product_key]
-        Chef::Log.warn "product_name '#{new_resource.product_name}' is deprecated and it will be removed in the future versions of chef-ingredient. Use '#{new_product_key}' instead of '#{new_resource.product_name}'."
-        new_resource.product_name(new_product_key)
-      else
-        # We also have a specific case we need to handle for push-client and push-server
-        deprecated_product_names = {
-          'push-client' => 'push-jobs-client',
-          'push-server' => 'push-jobs-server',
-        }
-
-        if deprecated_product_names.keys.include?(new_resource.product_name)
-          new_product_key = deprecated_product_names[new_resource.product_name]
-          Chef::Log.warn "product_name '#{new_resource.product_name}' is deprecated and it will be removed in the future versions of chef-ingredient. Use '#{new_product_key}' instead of '#{new_resource.product_name}'."
-          new_resource.product_name(new_product_key)
+    def ensurekv(config, hash)
+      hash.each do |k, v|
+        if v.is_a?(Symbol)
+          v = v.to_s
+          str = v
+        else
+          str = "'#{v}'"
+        end
+        if config =~ /^ *#{v}.*$/
+          config.sub(/^ *#{v}.*$/, "#{k} #{str}")
+        else
+          config << "\n#{k} #{str}"
         end
       end
+      config
     end
   end
 end
