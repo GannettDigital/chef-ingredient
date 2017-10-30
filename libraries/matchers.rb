@@ -1,81 +1,121 @@
 if defined?(ChefSpec)
-  %i(chef_ingredient chef_server_ingredient omnibus_service ingredient_config).each do |resource|
+  %i(chef_ingredient omnibus_service ingredient_config).each do |resource|
     ChefSpec.define_matcher resource
   end
 
-  def install_chef_ingredient(pkg)
-    ChefSpec::Matchers::ResourceMatcher.new(:chef_ingredient, :install, pkg)
+  def install_chef_ingredient(name)
+    ChefSpec::Matchers::ResourceMatcher.new(:chef_ingredient, :install, name)
   end
 
-  def upgrade_chef_ingredient(pkg)
-    ChefSpec::Matchers::ResourceMatcher.new(:chef_ingredient, :upgrade, pkg)
+  def upgrade_chef_ingredient(name)
+    ChefSpec::Matchers::ResourceMatcher.new(:chef_ingredient, :upgrade, name)
   end
 
-  def uninstall_chef_ingredient(pkg)
-    ChefSpec::Matchers::ResourceMatcher.new(:chef_ingredient, :uninstall, pkg)
+  def uninstall_chef_ingredient(name)
+    ChefSpec::Matchers::ResourceMatcher.new(:chef_ingredient, :uninstall, name)
   end
 
-  def remove_chef_ingredient(pkg)
-    ChefSpec::Matchers::ResourceMatcher.new(:chef_ingredient, :remove, pkg)
+  def remove_chef_ingredient(name)
+    ChefSpec::Matchers::ResourceMatcher.new(:chef_ingredient, :remove, name)
   end
 
-  def reconfigure_chef_ingredient(pkg)
-    ChefSpec::Matchers::ResourceMatcher.new(:chef_ingredient, :reconfigure, pkg)
+  def reconfigure_chef_ingredient(name)
+    ChefSpec::Matchers::ResourceMatcher.new(:chef_ingredient, :reconfigure, name)
   end
 
-  def install_chef_server_ingredient(pkg)
-    ChefSpec::Matchers::ResourceMatcher.new(:chef_server_ingredient, :install, pkg)
+  def restart_omnibus_service(name)
+    ChefSpec::Matchers::ResourceMatcher.new(:omnibus_service, :restart, name)
   end
 
-  def uninstall_chef_server_ingredient(pkg)
-    ChefSpec::Matchers::ResourceMatcher.new(:chef_server_ingredient, :uninstall, pkg)
+  def start_omnibus_service(name)
+    ChefSpec::Matchers::ResourceMatcher.new(:omnibus_service, :start, name)
   end
 
-  def remove_chef_server_ingredient(pkg)
-    ChefSpec::Matchers::ResourceMatcher.new(:chef_server_ingredient, :remove, pkg)
+  def stop_omnibus_service(name)
+    ChefSpec::Matchers::ResourceMatcher.new(:omnibus_service, :stop, name)
   end
 
-  def reconfigure_chef_server_ingredient(pkg)
-    ChefSpec::Matchers::ResourceMatcher.new(:chef_server_ingredient, :reconfigure, pkg)
+  def hup_omnibus_service(name)
+    ChefSpec::Matchers::ResourceMatcher.new(:omnibus_service, :hup, name)
   end
 
-  def restart_omnibus_service(pkg)
-    ChefSpec::Matchers::ResourceMatcher.new(:omnibus_service, :restart, pkg)
+  def int_omnibus_service(name)
+    ChefSpec::Matchers::ResourceMatcher.new(:omnibus_service, :int, name)
   end
 
-  def start_omnibus_service(pkg)
-    ChefSpec::Matchers::ResourceMatcher.new(:omnibus_service, :start, pkg)
+  def kill_omnibus_service(name)
+    ChefSpec::Matchers::ResourceMatcher.new(:omnibus_service, :kill, name)
   end
 
-  def stop_omnibus_service(pkg)
-    ChefSpec::Matchers::ResourceMatcher.new(:omnibus_service, :stop, pkg)
+  def graceful_kill_omnibus_service(name)
+    ChefSpec::Matchers::ResourceMatcher.new(:omnibus_service, :graceful_kill, name)
   end
 
-  def hup_omnibus_service(pkg)
-    ChefSpec::Matchers::ResourceMatcher.new(:omnibus_service, :hup, pkg)
+  def once_kill_omnibus_service(name)
+    ChefSpec::Matchers::ResourceMatcher.new(:omnibus_service, :once, name)
   end
 
-  def int_omnibus_service(pkg)
-    ChefSpec::Matchers::ResourceMatcher.new(:omnibus_service, :int, pkg)
+  def render_ingredient_config(name)
+    ChefSpec::Matchers::ResourceMatcher.new(:ingredient_config, :render, name)
   end
 
-  def kill_omnibus_service(pkg)
-    ChefSpec::Matchers::ResourceMatcher.new(:omnibus_service, :kill, pkg)
+  def add_ingredient_config(name)
+    ChefSpec::Matchers::ResourceMatcher.new(:ingredient_config, :add, name)
   end
 
-  def graceful_kill_omnibus_service(pkg)
-    ChefSpec::Matchers::ResourceMatcher.new(:omnibus_service, :graceful_kill, pkg)
+  def create_chef_automate(name)
+    ChefSpec::Matchers::ResourceMatcher.new(:chef_automate, :create, name)
   end
 
-  def once_kill_omnibus_service(pkg)
-    ChefSpec::Matchers::ResourceMatcher.new(:omnibus_service, :once, pkg)
+  def create_backend_cluster(name)
+    ChefSpec::Matchers::ResourceMatcher.new(:chef_backend, :create, name)
   end
 
-  def render_ingredient_config(pkg)
-    ChefSpec::Matchers::ResourceMatcher.new(:ingredient_config, :render, pkg)
+  def join_backend_cluster(name)
+    ChefSpec::Matchers::ResourceMatcher.new(:chef_backend, :join, name)
   end
 
-  def add_ingredient_config(pkg)
-    ChefSpec::Matchers::ResourceMatcher.new(:ingredient_config, :add, pkg)
+  def create_chef_org(name)
+    ChefSpec::Matchers::ResourceMatcher.new(:chef_org, :create, name)
+  end
+
+  def delete_chef_org(name)
+    ChefSpec::Matchers::ResourceMatcher.new(:chef_org, :delete, name)
+  end
+
+  def create_chef_user(name)
+    ChefSpec::Matchers::ResourceMatcher.new(:chef_user, :create, name)
+  end
+
+  def delete_chef_user(name)
+    ChefSpec::Matchers::ResourceMatcher.new(:chef_user, :delete, name)
+  end
+
+  def install_chef_client(name)
+    ChefSpec::Matchers::ResourceMatcher.new(:chef_client, :install, name)
+  end
+
+  def register_chef_client(name)
+    ChefSpec::Matchers::ResourceMatcher.new(:chef_client, :register, name)
+  end
+
+  def run_chef_client(name)
+    ChefSpec::Matchers::ResourceMatcher.new(:chef_client, :run, name)
+  end
+
+  def create_chef_file(name)
+    ChefSpec::Matchers::ResourceMatcher.new(:chef_file, :create, name)
+  end
+
+  def create_chef_server(name)
+    ChefSpec::Matchers::ResourceMatcher.new(:chef_server, :create, name)
+  end
+
+  def create_chef_supermarket(name)
+    ChefSpec::Matchers::ResourceMatcher.new(:chef_supermarket, :create, name)
+  end
+
+  def create_build_node(name)
+    ChefSpec::Matchers::ResourceMatcher.new(:workflow_builder, :create, name)
   end
 end
